@@ -1,4 +1,4 @@
-module github.com/IbrahimShahzad/gonfigure/v1
+module github.com/IbrahimShahzad/gonfigure
 
 go 1.17
 
