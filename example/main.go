@@ -11,5 +11,5 @@ func main() {
 		fmt.Println(err)
 		panic(err)
 	}
-	fmt.Println(string(dat))
+	fmt.Println(dat)
 }

@@ -11,14 +11,7 @@ import (
 type Section struct {
 	sectionCount int
 	sectionName  string
-	parameters   map[string]string
-}
-
-type Parameter struct {
-	Section
-	parameterCount int
-	parameterName  string
-	parameterValue string
+	//parameters   map[string]string
 }
 
 func checkComment(line string) bool {
@@ -52,47 +45,54 @@ func isEmptyLine(line string) bool {
 func isLetter(letter rune) bool {
 	return ('a' <= letter && letter <= 'z') || ('A' <= letter && letter <= 'Z')
 }
+func getParameter(line string) (string, string) {
+	val := strings.Split(line, "=")
+	return val[0], val[1]
+}
 
-func LoadINI(pathToFile string) ([]byte, error) {
-	file, err := os.Open(pathToFile)
-	if err != nil {
-		return []byte(""), fmt.Errorf("Cannot Load INI File")
-	}
-	defer file.Close()
-
+func LoadINI(pathToFile string) (map[string]map[string]string, error) {
 	stemp := Section{
 		sectionCount: 0,
 	}
+	//stemp.parameters = make(map[string]string)
+	globalMap := make(map[string]map[string]string)
+
+	file, err := os.Open(pathToFile)
+	if err != nil {
+		return globalMap, fmt.Errorf("Cannot Load INI File:%v", pathToFile)
+	}
+	defer file.Close()
+
+	lineCount := 0
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
+		lineCount = lineCount + 1
 
 		if isEmptyLine(line) {
-			fmt.Println("Found Empty Line")
 			continue
 		}
 		if checkComment(line) {
-			fmt.Println("Found a Comment")
 			continue
 		}
 
 		if checkSection(line) {
-			fmt.Printf("SECTION:\t")
 			stemp.sectionName = getSectionName(line)
 			stemp.sectionCount = stemp.sectionCount + 1
-			fmt.Println(stemp.sectionName)
+			globalMap[stemp.sectionName] = map[string]string{}
 			continue
 		}
 		if !isLetter(rune(line[0])) {
-			panic("Line starts with unknown!")
+			return globalMap, fmt.Errorf("Cannot parse INI File. invalid parameter at line:%v", lineCount)
+		} else {
+			key, value := getParameter(line)
+			globalMap[stemp.sectionName][key] = value
+			continue
 		}
-		fmt.Println("def: ", line)
 
 	}
-
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("--------------")
-	return []byte("hello"), nil
+	return globalMap, nil
 }
