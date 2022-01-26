@@ -1,5 +1,7 @@
 # Gonfigure
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/IbrahimShahzad/gonfigure.svg)](https://pkg.go.dev/github.com/IbrahimShahzad/gonfigure)
+
 Reads ini files in golang.
 
 ## Reading INI Files
