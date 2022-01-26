@@ -249,3 +249,21 @@ func LoadINI(pathToFile string) (INIobject, error) {
 	}
 	return globalMap, nil
 }
+
+func InitialiseINIobj() INIobject {
+	iniObj := make(INIobject)
+	return iniObj
+}
+
+func InsertSection(iniObj INIobject, sectionName string) INIobject {
+	iniObj[sectionName] = map[string]string{}
+	return iniObj
+}
+
+func WriteParameterToSection(iniObj INIobject, sectionName string, parameter string, value string) (INIobject, error) {
+	if _, ok := iniObj[sectionName]; !ok {
+		return iniObj, fmt.Errorf("Section [%v] does not exist ", sectionName)
+	}
+	iniObj[sectionName][parameter] = value
+	return iniObj, nil
+}
