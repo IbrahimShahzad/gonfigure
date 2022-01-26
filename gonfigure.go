@@ -1,3 +1,5 @@
+// Author: IbrahimShahzad
+//
 package gonfigure
 
 import (
@@ -8,12 +10,24 @@ import (
 	"strings"
 )
 
-type Section struct {
+// Object to hold INI data as key-value maps
+type INIobject map[string]map[string]string
+
+type section struct {
 	sectionCount int
 	sectionName  string
-	//parameters   map[string]string
 }
 
+// checks whether the line is a comment line or data line
+//
+// Checks whether the given line starts with # symbol
+//
+// Args
+//	line as string
+//
+// Returns
+//	True in case of comment-line
+//	False in case of non-comment-line
 func checkComment(line string) bool {
 	if strings.HasPrefix(strings.TrimSpace(line), "#") {
 		return true
@@ -21,6 +35,16 @@ func checkComment(line string) bool {
 	return false
 }
 
+// checks whether the line is a valid "section" line or not
+//
+// Expects a "section" line to start with  "[ " and  end with "]"
+//
+// Args
+//	line as string
+//
+// Returns
+//	True in case of section-line
+//	False in case of non-section-line
 func checkSection(line string) bool {
 	if start := strings.HasPrefix(line, "["); !start {
 		return false
@@ -31,10 +55,27 @@ func checkSection(line string) bool {
 	return true
 }
 
+// returns section name from the valid section line
+//
+// Args
+//	section header line as string
+//
+// Returns
+//	section name as string
 func getSectionName(sectionHeader string) string {
 	return strings.TrimRight(strings.TrimLeft(sectionHeader, "["), "]")
 }
 
+// checks whether the line is empty or not
+//
+// Empty lines are skipped while reading the ini file
+//
+// Args
+//	line as string
+//
+// Returns
+//	True in case of empty line
+//	False in case of non-empty line
 func isEmptyLine(line string) bool {
 	if strings.TrimSpace(line) == "" {
 		return true
@@ -42,14 +83,43 @@ func isEmptyLine(line string) bool {
 	return false
 }
 
+// Checks whether the given letter is alphabetic
+//
+// Args
+// 	first letter of line as rune
+//
+// Returns
+//	True for alphabetic rune
+//	False for non-alphabetic rune
 func isLetter(letter rune) bool {
 	return ('a' <= letter && letter <= 'z') || ('A' <= letter && letter <= 'Z')
 }
+
+// Splits the parameter line into key and value
+//
+// Args
+// 	line as string
+//
+// Returns
+// 	Key and value strings
 func getParameter(line string) (string, string) {
 	val := strings.Split(line, "=")
 	return val[0], val[1]
 }
-func GetSections(mapINI map[string]map[string]string) []string {
+
+// Get Sections From INIobject
+//
+// Args
+// 	INI file object,
+//
+// Returns
+//	Array of section names (strings)
+//
+// The call can be made as following:
+//
+// 		sections := gonfigure.GetSections(iniObj)
+//
+func GetSections(mapINI INIobject) []string {
 	sections := make([]string, len(mapINI))
 	iterator := 0
 	for key := range mapINI {
@@ -62,23 +132,23 @@ func GetSections(mapINI map[string]map[string]string) []string {
 // Get Parameters From A Given Section
 //
 // Args
-// 		INI file object,
-//		section Name,
+// 	INI file object,
+//	section Name,
 //
 // Returns
-//		Array of parameter names (strings)
-//		Error
+//	Array of parameter names (strings)
+//	Error
 //
 // The call can be made as following:
 //
-// 		parameters, err := gonfigure.GetParametersFromSection(dat, "sectionA")
+// 		parameters, err := gonfigure.GetParametersFromSection(iniObj, "sectionA")
 //		if err != nil {
 //			panic(err)
 //		}
 //
-func GetParametersFromSection(mapINI map[string]map[string]string, sectionName string) ([]string, error) {
+func GetParametersFromSection(mapINI INIobject, sectionName string) ([]string, error) {
 	if _, ok := mapINI[sectionName]; !ok {
-		return []string{""}, fmt.Errorf("Section [%v] does not exist", sectionName)
+		return []string{""}, fmt.Errorf("Section [%v] does not exist ", sectionName)
 	}
 	parameters := make([]string, len(mapINI[sectionName]))
 	iterator := 0
@@ -89,26 +159,60 @@ func GetParametersFromSection(mapINI map[string]map[string]string, sectionName s
 	return parameters, nil
 }
 
-func GetParameterValue(mapINI map[string]map[string]string, sectionName string, parameterName string) (string, error) {
+// Get Parameters From A Given Section
+//
+// Args
+// 	INI file object,
+//	section name as string,
+//	parameter name as string
+//
+// Returns
+//	parameter value as strings
+//	Error
+//
+// The call can be made as following:
+//
+// 		parameters, err := gonfigure.GetParameterValue(iniObj, "sectionA","parameterName")
+//		if err != nil {
+//			panic(err)
+//		}
+//
+func GetParameterValue(mapINI INIobject, sectionName string, parameterName string) (string, error) {
 	if _, ok := mapINI[sectionName]; !ok {
-		return "", fmt.Errorf("Section [%v] does not exist", sectionName)
+		return "", fmt.Errorf("Section [%v] does not exist ", sectionName)
 	}
 	if _, ok := mapINI[sectionName][parameterName]; !ok {
-		return "", fmt.Errorf("Parameter [%v] does not exist", parameterName)
+		return "", fmt.Errorf("Parameter [%v] does not exist ", parameterName)
 	}
 	return mapINI[sectionName][parameterName], nil
 }
 
-func LoadINI(pathToFile string) (map[string]map[string]string, error) {
-	stemp := Section{
+// Reads the ini file and loads/returns the INI object
+//
+// Args
+//	path to file as string
+//
+// Returns
+//	INIobj
+//	Error
+//
+// The call can be made as following:
+//
+// 		iniObj, err := gonfigure.LoadINI("example_file.ini")
+//		if err != nil {
+//			panic(err)
+//		}
+//
+func LoadINI(pathToFile string) (INIobject, error) {
+	stemp := section{
 		sectionCount: 0,
 	}
-	//stemp.parameters = make(map[string]string)
-	globalMap := make(map[string]map[string]string)
+	// The main ini object to return
+	globalMap := make(INIobject)
 
 	file, err := os.Open(pathToFile)
 	if err != nil {
-		return globalMap, fmt.Errorf("Cannot Load INI File:%v", pathToFile)
+		return globalMap, fmt.Errorf("Cannot Load INI File: %v", pathToFile)
 	}
 	defer file.Close()
 
@@ -132,7 +236,7 @@ func LoadINI(pathToFile string) (map[string]map[string]string, error) {
 			continue
 		}
 		if !isLetter(rune(line[0])) {
-			return globalMap, fmt.Errorf("Cannot parse INI File. invalid parameter at line:%v", lineCount)
+			return globalMap, fmt.Errorf("Cannot parse INI File. Invalid parameter at line: %v", lineCount)
 		} else {
 			key, value := getParameter(line)
 			globalMap[stemp.sectionName][key] = value
