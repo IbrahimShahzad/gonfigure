@@ -1,5 +1,6 @@
-# gonfigure
-read and write ini files
+# Gonfigure
+
+Reads ini files in golang.
 
 ## Reading INI Files
 ### Load file
