@@ -8,12 +8,6 @@ import (
 	"strings"
 )
 
-type Section struct {
-	sectionCount int
-	sectionName  string
-	//parameters   map[string]string
-}
-
 func checkComment(line string) bool {
 	if strings.HasPrefix(strings.TrimSpace(line), "#") {
 		return true
@@ -48,6 +42,55 @@ func isLetter(letter rune) bool {
 func getParameter(line string) (string, string) {
 	val := strings.Split(line, "=")
 	return val[0], val[1]
+}
+func GetSections(mapINI map[string]map[string]string) []string {
+	sections := make([]string, len(mapINI))
+	iterator := 0
+	for key := range mapINI {
+		sections[iterator] = key
+		iterator++
+	}
+	return sections
+}
+
+// Get Parameters From A Given Section
+//
+// Args
+// 		INI file object,
+//		section Name,
+//
+// Returns
+//		Array of parameter names (strings)
+//		Error
+//
+// The call can be made as following:
+//
+// 		parameters, err := gonfigure.GetParametersFromSection(dat, "sectionA")
+//		if err != nil {
+//			panic(err)
+//		}
+//
+func GetParametersFromSection(mapINI map[string]map[string]string, sectionName string) ([]string, error) {
+	if _, ok := mapINI[sectionName]; !ok {
+		return []string{""}, fmt.Errorf("Section [%v] does not exist", sectionName)
+	}
+	parameters := make([]string, len(mapINI[sectionName]))
+	iterator := 0
+	for key := range mapINI[sectionName] {
+		parameters[iterator] = key
+		iterator++
+	}
+	return parameters, nil
+}
+
+func GetParameterValue(mapINI map[string]map[string]string, sectionName string, parameterName string) (string, error) {
+	if _, ok := mapINI[sectionName]; !ok {
+		return "", fmt.Errorf("Section [%v] does not exist", sectionName)
+	}
+	if _, ok := mapINI[sectionName][parameterName]; !ok {
+		return "", fmt.Errorf("Parameter [%v] does not exist", parameterName)
+	}
+	return mapINI[sectionName][parameterName], nil
 }
 
 func LoadINI(pathToFile string) (map[string]map[string]string, error) {
