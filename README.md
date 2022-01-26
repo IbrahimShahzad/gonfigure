@@ -94,7 +94,8 @@ package main
 
 import (
 	"fmt"
-	"gonfigure"
+
+	"github.com/IbrahimShahzad/gonfigure"
 )
 
 func main() {
@@ -118,6 +119,7 @@ func main() {
 			}
 			fmt.Printf("Param: %v Value: %v\n", param, val)
 		}
+		fmt.Printf("\n")
 	}
 }
 ```
@@ -133,8 +135,10 @@ Param: parameterName Value: parameterValue
 Param: parameterName1 Value: parameterValue1
 Param: parameterName2 Value: parameterValue2
 Param: name Value: john
+
 Section: sectionB
 Param: parameterName3 Value: parameterValue1
+
 Section: Developer
 Param: age Value: 23
 Param: name Value: ibrahim
