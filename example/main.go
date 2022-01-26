@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"gonfigure"
+
+	"github.com/IbrahimShahzad/gonfigure"
 )
 
 func main() {
