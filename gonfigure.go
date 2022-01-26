@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+type Section struct {
+	sectionCount int
+	sectionName  string
+	//parameters   map[string]string
+}
+
 func checkComment(line string) bool {
 	if strings.HasPrefix(strings.TrimSpace(line), "#") {
 		return true
