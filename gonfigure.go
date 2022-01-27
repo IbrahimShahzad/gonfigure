@@ -208,11 +208,11 @@ func LoadINI(pathToFile string) (INIobject, error) {
 		sectionCount: 0,
 	}
 	// The main ini object to return
-	globalMap := make(INIobject)
+	objINI := make(INIobject)
 
 	file, err := os.Open(pathToFile)
 	if err != nil {
-		return globalMap, fmt.Errorf("Cannot Load INI File: %v", pathToFile)
+		return objINI, fmt.Errorf("Cannot Load INI File: %v", pathToFile)
 	}
 	defer file.Close()
 
@@ -232,14 +232,14 @@ func LoadINI(pathToFile string) (INIobject, error) {
 		if checkSection(line) {
 			stemp.sectionName = getSectionName(line)
 			stemp.sectionCount = stemp.sectionCount + 1
-			globalMap[stemp.sectionName] = map[string]string{}
+			objINI[stemp.sectionName] = map[string]string{}
 			continue
 		}
 		if !isLetter(rune(line[0])) {
-			return globalMap, fmt.Errorf("Cannot parse INI File. Invalid parameter at line: %v", lineCount)
+			return objINI, fmt.Errorf("Cannot parse INI File. Invalid parameter at line: %v", lineCount)
 		} else {
 			key, value := getParameter(line)
-			globalMap[stemp.sectionName][key] = value
+			objINI[stemp.sectionName][key] = value
 			continue
 		}
 
@@ -247,23 +247,143 @@ func LoadINI(pathToFile string) (INIobject, error) {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
-	return globalMap, nil
+	return objINI, nil
 }
 
+// Creates an empty INI object
+//
+// Returns
+//	INIobj
+//
+// The call can be made as following:
+//
+// 		iniObj, err := gonfigure.InitialiseINIobj()
+//
 func InitialiseINIobj() INIobject {
 	iniObj := make(INIobject)
 	return iniObj
 }
 
+// Insert Section in INI object
+//
+// Args
+//	INIobject
+//	Section name as string
+//
+// Returns
+//	INIobj
+//	Error
+//
+// The call can be made as following:
+//
+// 		iniObj, err := gonfigure.InsertSection(iniObj,"ExampleSection")
+//		if err != nil {
+//			panic(err)
+//		}
+//
 func InsertSection(iniObj INIobject, sectionName string) INIobject {
 	iniObj[sectionName] = map[string]string{}
 	return iniObj
 }
 
+// Writes Parameter to Section
+//
+// Args
+//	INIobject
+//	Section name as string
+//	Parameter Name as string
+//	Parameter Value as string
+//	INIobject
+//
+// Returns
+//	INIobj
+//	Error
+//
+// The Section You are trying to write to MUST exist. See `InsertSection()` function
+//
+// The call can be made as following:
+//
+// 		iniObj, err := gonfigure.WriteParameterToSection(iniObj,"ExampleSection","username","password")
+//		if err != nil {
+//			panic(err)
+//		}
+//
 func WriteParameterToSection(iniObj INIobject, sectionName string, parameter string, value string) (INIobject, error) {
 	if _, ok := iniObj[sectionName]; !ok {
 		return iniObj, fmt.Errorf("Section [%v] does not exist ", sectionName)
 	}
 	iniObj[sectionName][parameter] = value
 	return iniObj, nil
+}
+
+// Writes INI section to File
+//
+// Args
+//	output File pointer
+//	Section name as string
+//
+// Returns
+//	Error
+func writeINISectionToFile(outputFile *os.File, sectionName string) error {
+	outputString := "[" + strings.ToLower(sectionName) + "]\n"
+	_, err := outputFile.WriteString(outputString)
+	return err
+}
+
+// Writes INI parameter name and value to File
+//
+// Args
+//	output File pointer
+//	parameter name as string
+//	parameter value as string
+//
+// Returns
+//	Error
+func writeINIParameterToFile(outputFile *os.File, parameterName string, parameterValue string) error {
+	outputString := parameterName + "=" + parameterValue + "\n"
+	_, err := outputFile.WriteString(outputString)
+	return err
+}
+
+// Writes INI file
+//
+// Args
+//	INI object
+//	path to file
+//
+// Returns
+//	Error
+func WriteINIFile(iniObj INIobject, pathToFile string) error {
+	// Create an output File
+	outputFile, err := os.Create(pathToFile)
+	if err != nil {
+		return err
+	}
+
+	// Close File after function returns
+	defer outputFile.Close()
+
+	for _, section := range GetSections(iniObj) {
+		// Write Section Header
+		err := writeINISectionToFile(outputFile, section)
+		if err != nil {
+			return err
+		}
+
+		// Write Parameters
+		parameters, err := GetParametersFromSection(iniObj, section)
+		if err != nil {
+			return err
+		}
+		for _, param := range parameters {
+			val, err := GetParameterValue(iniObj, section, param)
+			if err != nil {
+				return err
+			}
+			err = writeINIParameterToFile(outputFile, param, val)
+			if err != nil {
+				return err
+			}
+		}
+	}
 }
