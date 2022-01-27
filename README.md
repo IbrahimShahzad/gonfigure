@@ -36,7 +36,7 @@ if err != nil {
 - Consider the following example.
 
 ```go
-	fmt.Println(gonfigure.GetSections(dat))
+	fmt.Println(gonfigure.GetSections(iniObj))
 ```
 ### Parameters
 
@@ -55,7 +55,7 @@ if err != nil {
 - Consider the following example.
 
 ```go
-	parameters, err := gonfigure.GetParametersFromSection(dat, "Developer")
+	parameters, err := gonfigure.GetParametersFromSection(iniObj, "Developer")
 	if err != nil {
 		panic(err)
 	}
@@ -78,7 +78,7 @@ if err != nil {
 - Consider the following example.
 
 ```go
-	val, err := gonfigure.GetParameterValue(dat, "Developer", "name")
+	val, err := gonfigure.GetParameterValue(iniObj, "Developer", "name")
 	if err != nil {
 		panic(err)
 	}
@@ -208,4 +208,38 @@ newObj = gonfigure.InsertSection(newObj, "Ansible")
 	if err!= nil {
 		panic()
 	}
+```
+
+### Example code
+
+- Following code inserts a section, parameter name and value to a file
+
+```go
+package main
+
+include (
+	"fmt"
+
+	"gihtub.com/IbrahimShahzad/gonfigure"
+)
+func main(){
+	newObj := gonfigure.InitialiseINIobj()
+	newObj = gonfigure.InsertSection(newObj, "Ansible")
+	newObj, err = gonfigure.WriteParameterToSection(newObj, "Ansible", "username", "value")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(newObj)
+	err = gonfigure.WriteINIFile(newObj, "./write.ini")
+	if err != nil {
+		panic(err)
+
+
+}
+```
+- Writes the following file:
+
+```ini
+[ansible]
+username=value
 ```

@@ -386,4 +386,5 @@ func WriteINIFile(iniObj INIobject, pathToFile string) error {
 			}
 		}
 	}
+	return nil
 }
