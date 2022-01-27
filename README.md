@@ -233,8 +233,7 @@ func main(){
 	err = gonfigure.WriteINIFile(newObj, "./write.ini")
 	if err != nil {
 		panic(err)
-
-
+	}
 }
 ```
 - Writes the following file:
