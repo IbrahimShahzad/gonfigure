@@ -143,3 +143,69 @@ Section: Developer
 Param: age Value: 23
 Param: name Value: ibrahim
 ```
+
+## Writing INI Files
+
+### Creating an INI object
+
+- Create an empty ini object using `gonfigure.InitialiseINIobj()` function.
+
+- The following returns an empty ini object which we can use to fill up
+
+```go
+newObj := gonfigure.InitialiseINIobj()
+```
+
+### Adding a section
+
+- A new section can be added to the ini object using `gonfigure.InsertSection()` function. The function requires
+
+  - INI object
+
+  - Section Name as string that needs to be added
+
+- Consider the following implementation
+
+```go
+newObj = gonfigure.InsertSection(newObj, "Ansible")
+```
+
+### Adding Key/Values to sections
+
+- Parameters can be added to the section by calling `gonfigure.WriteParameterToSection()` function. The function requires
+
+  - INI object
+
+  - Section name as string
+  
+  - Key as string
+  
+  - Value as string
+
+- Note that the `section` must exist prior to calling this function
+
+- Consider the following implementation
+
+```go
+	newObj, err = gonfigure.WriteParameterToSection(newObj, "Ansible", "username", "value")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(newObj)
+```
+### Write INI obj to File
+
+- A filled ini object can be written to the file by calling the `gonfigure.WriteINIFile()` function. The function requires
+
+  - Ini object
+
+  - Path to file as string
+
+- Consider the following implementation
+
+```go
+	err:= WriteINIFile(newObj , "./writeExample.ini")
+	if err!= nil {
+		panic()
+	}
+```
